@@ -1,0 +1,19 @@
+# List of topics
+
+| # | Wiki topic | Content type | Planned treatment |
+|-----|-----------|---------|---------|
+|     1| What is a container?| Concept | Rewrite the introduction and qualify broad claims.| 
+|     2| Containers and images    | Concept | Explain the distinction with one consistent example. | 
+|     3| Containers and virtual machines   | Concept | Present a concise comparison. |
+|     4| Prepare your environment| Procedure | Consolidate prerequisites and setup checks.| 
+|     5| Run your first container    | Procedure | Provide steps and expected results. | 
+|     6| View running and stopped containers   | Procedure | Explain how to identify container state. |
+|     7| Open a containerized website| Procedure | Explain the host address and port mapping. | 
+|     8| Stop and restart a container    | Procedure | Explain the actions and verify their results. | 
+|     9| Assign a container name   | Reference/procedure | Explain naming with a practical example. |
+|     10| Run a container in the background | Reference/procedure | Explain detached mode and completion checks.| 
+|     11| Set environment variables    | Reference/procedure | Explain selected options and examples. | 
+|     12|	Configure the Docker daemon |	Procedure |	Clarify applicability, configuration methods, and verification. |
+|     13|	Troubleshoot a container that will not start |	Troubleshooting	 | Organize verified issues by symptom, cause, and solution.|
+|     14| Choose a Docker Engine API version | Procedure |	Turn compatibility guidance into a decision sequence. |
+|     15|	Manage containers through the API	| API guide |	Introduce selected operations and link to Swagger documentation.|
