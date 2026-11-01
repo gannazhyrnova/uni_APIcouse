@@ -1,0 +1,294 @@
+openapi: 3.0.3
+info:
+  title: Docker Engine API — Container Management
+  version: 1.0.0
+  description: 'Educational subset of Docker Engine API v1.51: create, start, inspect,
+    and stop. Schema coverage is intentionally limited and is not the complete Docker
+    specification. Use a daemon supporting v1.51. Workflow: pull image, create, start,
+    inspect, stop. Browser Swagger UI cannot connect directly to a Unix socket. The
+    server below is a nonfunctional documentation placeholder; do not enable unauthenticated
+    Docker TCP access. Live testing requires a separately secured endpoint and suitable
+    browser/CORS configuration. Unix-socket access uses OS permissions; no bearer-token
+    authentication is invented here. After stopping, optional cleanup via Docker CLI:
+    docker rm api-demo. Source: https://docs.docker.com/reference/api/engine/version/v1.51/'
+servers:
+- url: https://docker-api.example.invalid/v1.51
+  description: Documentation placeholder only. Replace solely with an authorized,
+    secured HTTP endpoint for live testing.
+tags:
+- name: Containers
+  description: Manage one demonstration container; avoid production workloads.
+paths:
+  /containers/create:
+    post:
+      tags:
+      - Containers
+      operationId: createContainer
+      summary: Create a container
+      description: Creates but does not start a container. Pull docker/welcome-to-docker:latest
+        first using Docker CLI or the image API. The image must exist on the target
+        engine. Only selected request fields are documented. No host port is published
+        by this example.
+      parameters:
+      - name: name
+        in: query
+        description: Optional unique container name; stopped containers also reserve
+          names.
+        schema:
+          type: string
+          pattern: ^[a-zA-Z0-9][a-zA-Z0-9_.-]+$
+        example: api-demo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRequest'
+            example:
+              Image: docker/welcome-to-docker:latest
+      responses:
+        '201':
+          description: Created. Save Id for subsequent requests.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateResponse'
+              example:
+                Id: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+                Warnings: []
+        '400':
+          description: Invalid request parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: Invalid request parameters.
+        '404':
+          description: Image not found on the target engine.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: Image not found on the target engine.
+        '409':
+          description: Container name is already in use.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: Container name is already in use.
+        '500':
+          description: Docker daemon error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: Docker daemon error.
+  /containers/{id}/start:
+    post:
+      tags:
+      - Containers
+      operationId: startContainer
+      summary: Start a container
+      description: Starts an existing container. Success has no response body; inspect
+        state afterwards to verify continued execution.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Container ID or name. Use the Id returned by create, or api-demo.
+        schema: &id001
+          type: string
+        example: api-demo
+      responses:
+        '204':
+          description: Started. No response body.
+        '304':
+          description: Already started. No response body.
+        '400':
+          description: Invalid start parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: Invalid start parameters.
+        '404':
+          description: Container not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: Container not found.
+        '500':
+          description: Docker daemon error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: Docker daemon error.
+  /containers/{id}/stop:
+    post:
+      tags:
+      - Containers
+      operationId: stopContainer
+      summary: Stop a container
+      description: Sends the configured stop signal, then forcibly terminates the
+        process if the shutdown timeout expires.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Container ID or name. Use the Id returned by create, or api-demo.
+        schema: *id001
+        example: api-demo
+      - name: t
+        in: query
+        description: Shutdown timeout in seconds. -1 waits indefinitely. If omitted,
+          the container or daemon default applies.
+        schema:
+          type: integer
+          minimum: -1
+        example: 10
+      responses:
+        '204':
+          description: Stopped. No response body.
+        '304':
+          description: Already stopped. No response body.
+        '404':
+          description: Container not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: Container not found.
+        '500':
+          description: Docker daemon error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: Docker daemon error.
+  /containers/{id}/json:
+    get:
+      tags:
+      - Containers
+      operationId: inspectContainer
+      summary: Inspect a container
+      description: Returns configuration and runtime state. Selected response fields
+        are documented; the real response contains additional fields. Running does
+        not guarantee application readiness.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Container ID or name. Use the Id returned by create, or api-demo.
+        schema: *id001
+        example: api-demo
+      responses:
+        '200':
+          description: Container details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectResponse'
+              example:
+                Id: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+                Name: /api-demo
+                State:
+                  Status: running
+                  Running: true
+                  ExitCode: 0
+                  Error: ''
+                  OOMKilled: false
+        '404':
+          description: Container not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: Container not found.
+        '500':
+          description: Docker daemon error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: Docker daemon error.
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Human-readable error message.
+    CreateRequest:
+      type: object
+      required:
+      - Image
+      description: Selected fields for this course example; the full API supports
+        more configuration.
+      properties:
+        Image:
+          type: string
+          description: Locally available image reference.
+        Env:
+          type: array
+          items:
+            type: string
+          description: Optional NAME=value entries. Avoid secrets.
+        Cmd:
+          type: array
+          items:
+            type: string
+          description: Optional application command and arguments; omit to use image
+            defaults.
+    CreateResponse:
+      type: object
+      properties:
+        Id:
+          type: string
+        Warnings:
+          type: array
+          nullable: true
+          items:
+            type: string
+    InspectResponse:
+      type: object
+      properties:
+        Id:
+          type: string
+        Name:
+          type: string
+          description: Includes a leading slash in inspection output.
+        State:
+          $ref: '#/components/schemas/ContainerState'
+    ContainerState:
+      type: object
+      properties:
+        Status:
+          type: string
+          description: For example created, running, exited, or restarting.
+        Running:
+          type: boolean
+        ExitCode:
+          type: integer
+          description: Interpret after the process exits, together with logs.
+        Error:
+          type: string
+        OOMKilled:
+          type: boolean
+externalDocs:
+  description: Official Docker Engine API v1.51 reference
+  url: https://docs.docker.com/reference/api/engine/version/v1.51/
